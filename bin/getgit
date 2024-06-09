@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+CONFIG_FILE="$SCRIPT_DIR/../config/getgit.conf"
+
+configure_getgit_dir() {
+    local dir="$1"
+    echo "GETGIT_DIR=$dir" > "$CONFIG_FILE"
+    echo "Configured GETGIT_DIR as $dir"
+}
+
+source "$CONFIG_FILE" || true
+
+if [ -z "${GETGIT_DIR-}" ]; then
+    echo "Error: GETGIT_DIR is not set in the config file"
+    exit 1
+fi
+
+if [ "$#" -eq 2 ] && [ "$1" == "configure" ]; then
+    if [ ! -d "$2" ]; then
+        echo "ERROR: '$2' doesn't exist or is not a directory"
+        exit 1
+    fi
+    configure_getgit_dir "$2"
+    exit 0
+
+elif [ "$#" -ne 0 ]; then
+    echo "usage: getgit [configure DIR]"
+    exit 1
+fi
+
+repositories=$(find "$GETGIT_DIR" -maxdepth 1 -type d -exec test -e "{}/.git" \; -print | xargs -I{} basename {})
+
+selected_repo=$(echo "$repositories" | \
+    GETGIT_DIR="$GETGIT_DIR" fzf --preview '
+        preview_git_info() {
+            local dir="$1"
+            if [ -d "$GETGIT_DIR/$dir/.git" ]; then
+                echo "Repository: $dir"
+                echo "===================="
+                echo "Repository Information:"
+                git -C "$GETGIT_DIR/$dir" status
+                echo "===================="
+                echo "Remotes:"
+                git -C "$GETGIT_DIR/$dir" remote -v
+            else
+                echo "Error: Selected repository does not exist"
+                exit 1
+            fi
+        }
+        preview_git_info {}')
+
+if [ -n "$selected_repo" ]; then
+    echo "Selected repository: $selected_repo"
+    cd "$GETGIT_DIR/$selected_repo"
+    exec $SHELL
+
+fi
+
+exit 0

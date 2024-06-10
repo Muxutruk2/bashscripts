@@ -87,8 +87,9 @@ To use the scripts from anywhere in your terminal, you need to add the `bin` fol
 Here is a list of available scripts:
 
 - [getgit](docs/getgit.md): lazygit-like tool to quickly navigate to a repo inside a pre-configured repo folder
-
-For detailed documentation on each script, refer to the `docs` folder.
+- [git_configure](docs/git_configure.md): script to configure global options like git aliases, credential manager, username and email. Forked from [here](https://github.com/miguelgfierro/Scripts)
+- [setup_bashrc](docs/setup_bashrc.md): script to set up various tools to bash, cs (cd + ls), ccat (cat with color) or reimplement evince to run in the background. Forked from [here](https://github.com/miguelgfierro/Scripts)
+For detailed documentation on each script, click the link or refer to the `docs` folder.
 
 ## Documentation
 
